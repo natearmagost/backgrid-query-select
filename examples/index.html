@@ -75,6 +75,7 @@
 
       <h3 class="page-header">Example</h3>
       <p>The example below pulls in issues from the GitHub API.</p>
+      <div id="error"></div>
       <div id="paginator" class="pull-left" style="display: none;"></div>
       <div id="query-select" class="pull-right" style="display: none;"></div>
       <div id="grid" style="display: none;"></div>
@@ -453,10 +454,14 @@ var querySelect = new Backgrid.Extension.QuerySelect({
       });
 
       issues.on('sync', function () {
+        $('#error').html("");
         $("#grid").append(grid.render().$el).fadeIn();
         $("#paginator").append(paginator.render().$el).find('ul').addClass('pagination'); // Use Boostrap styles instead
         $("#paginator").fadeIn();
         $("#query-select").append(querySelect.render().$el).fadeIn();
+      });
+      issues.on('error', function () {
+        $('#error').html('<div class="alert alert-danger" role="alert">Sorry, the API call didn\'t sync. <strong>This is most likely because we are using GitHub\'s rate-limited API</strong>.</div>');
       });
 
       issues.fetch({reset: true});
