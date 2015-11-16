@@ -1,0 +1,30 @@
+{
+  "name": "backgrid-query-select",
+  "version": "0.1.0",
+  "description": "Backgrid.js extension for query parameters using a select box.",
+  "main": "backgrid-query-select.js",
+  "scripts": {
+    "test": "grunt jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/natearmagost/backgrid-query-select.git"
+  },
+  "keywords": [
+    "backbone",
+    "backgrid"
+  ],
+  "author": "Nate Armagost",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/natearmagost/backgrid-query-select/issues"
+  },
+  "devDependencies": {
+    "grunt-contrib-clean": "~0.4.1",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-cli": "~0.1.9",
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.10.0"
+  }
+}

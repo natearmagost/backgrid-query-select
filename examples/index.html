@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="Nate Armagost">
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
+
+    <title>Backgrid Query Select</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <style>
+      body {
+        padding: 60px 20px 20px 20px;
+        overflow-y: scroll;
+      }
+      .pagination {
+        margin: 0 0 10px;
+      }
+      pre {
+        margin: 0 0 20px;
+      }
+      ol, ul {
+        padding-left: 20px;
+      }
+    </style>
+
+    <!-- Backgrid CSS but we'll apply Bootstrap classes instead -->
+    <!-- <link href="css/backgrid.css" rel="stylesheet"> -->
+    <!-- <link href="css/backgrid-paginator.css" rel="stylesheet"> -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Backgrid Query Select</a>
+        </div>
+        <!--
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>--><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+
+
+      <h1 class="page-header">Backgrid Query Select</h1>
+
+      <p>A <a href="http://backgridjs.com/">Backgrid</a> extension that filters a collection with a select box. The extension requires <a href="https://github.com/backbone-paginator/backbone.paginator">backbone.paginator</a>. Dropdown options are sent to the collection's URL as a query parameter.</p>
+
+      <h3 class="page-header">Example</h3>
+      <p>The example below pulls in issues from the GitHub API.</p>
+      <div id="paginator" class="pull-left" style="display: none;"></div>
+      <div id="query-select" class="pull-right" style="display: none;"></div>
+      <div id="grid" style="display: none;"></div>
+      <div id="paginator" class="pull-left" style="display: none;"></div>
+
+      <h3 class="page-header">Code</h3>
+      <h4>Step 1</h4>
+      <p>Create a <a href="https://github.com/backbone-paginator/backbone.paginator">PageableCollection</a>. In this example, the collection will be filtered using the query parameter "q": https://api.github.com/search/issues?q={value}</p>
+<pre>
+var Issues = Backbone.PageableCollection.extend({
+
+  url: "https://api.github.com/search/issues",
+
+  state: {
+    pageSize: 10,
+    sortKey: "updated",
+    order: 1
+  },
+
+  queryParams: {
+    totalPages: null,
+    totalRecords: null,
+    sortKey: "sort",
+    <strong class="text-danger">q: "state:open"</strong>
+  },
+
+  ...
+
+});
+</pre>
+
+<h4>Step 2</h4>
+
+<p>Set up a Backgrid table.</p>
+
+<pre>
+var grid = new Backgrid.Grid({
+  columns: [
+    {
+      label: "Id",
+      name: "id",
+      cell: Backgrid.IntegerCell.extend({ orderSeparator: '' }),
+      sortable: false,
+      editable: false
+    },
+    {
+      label: "Title",
+      name: "title",
+      cell: "string",
+      sortable: false,
+      editable: false
+    },
+    ...
+    {
+      label: "Comments",
+      name: "comments",
+      cell: "integer",
+      sortable: true,
+      editable: false
+    }
+  ],
+  ...
+  collection: issues
+});
+</pre>
+
+<h4>Step 3</h3>
+
+<p>Set up the Backgrid Query Select extension.</p>
+
+<pre>
+var querySelect = new Backgrid.Extension.QuerySelect({
+  collection: issues,
+  ...
+  <span class="text-danger">selectBox: {
+    options: [
+      {
+        text: "All Issues",
+        label: "All",
+        value: ""
+      },
+      {
+        text: "Closed Issues",
+        value: "state:closed",
+        selected: true
+      },
+      {
+        text: "Open Issues",
+        value: "state:open",
+      },
+      {
+        text: "Bounty Issues",
+        disabled: true
+      }
+    ]
+  },
+  queryParam: "q"</span>
+});
+</pre>
+
+
+      <h3 class="page-header">Options</h3>
+
+      <p>The select box is set up using an array of objects under the <strong>options</strong> property. Each object represents a single dropdown option. The <strong>queryParam</strong> is passed on the URL.</p>
+<pre>
+selectBox: {
+  options: [
+    {
+      text: &lt;option text&gt;,
+      label: &lt;label attribute value&gt;,
+      value: &lt;value atribute&gt;, // The value of the query parameter
+      disabled: &lt;true/false&gt;,
+      selected: &lt;true/false&gt;
+    }
+  ]
+},
+queryParam: &lt;query parameter sent on the URL&gt;
+</pre>
+<pre>&lt;option label="{label}" value="{value}" {disabled} {selected}&gt;{text}&lt;option&gt;</pre>
+
+      <p>A select box set up as:</p>
+
+<pre>
+selectBox: {
+  options: [
+    {
+      text: "Less than $25",
+      value: 25,
+      disabled: false,
+      selected: false
+    },
+    {
+      text: "Less than $50",
+      value: 50,
+      disabled: false,
+      selected: true
+    }
+  ]
+},
+queryParam: "maxPrice"
+</pre>
+
+        <p>Would render the select box:</p>
+
+<pre>
+&lt;select&gt;
+  &lt;option value="25"&gt;Less than $25&lt;option&gt;
+  &lt;option value="50" selected&gt;Less than $50&lt;option&gt;
+&lt;select&gt;
+</pre>
+
+        <p>When an option is selected, the collection will append <strong>?maxPrice={value}</strong> to the URL and fetch the first page.</p>
+
+
+      <h3 class="page-header">Things to keep in mind</h3>
+
+      <ol>
+        <li><a href="https://github.com/backbone-paginator/backbone.paginator">backgrid.paginator</a> is absolutely required. The collection needs to be set up as a <strong>Backbone.PageableCollection</strong>. The extension is designed to operate in "server" mode and it uses the PageableCollection's <strong>queryParams</strong> property to send the query parameter on a fetch.</li>
+        <li>One of the options should be marked as <strong>selected: true</strong>. It is not exactly required, but if a selected option is not found the first option will appear as selected. The selected option's value should probably also match the collection's initial <strong>queryParams</strong> property value. (See <span class="text-danger">red text</span> below)</li>
+        <li>A <strong>Backbone.PageableCollection</strong> should contain an object called <strong>queryParams</strong>. Backgrid.Extension.QuerySelect should be set up with a <strong>queryParam</strong> where its string value matches a property on the collection. (See <span class="text-warning">yellow text</span> below)</li>
+      </ol>
+<pre>
+Backbone.PageableCollection.extend({
+  ...
+  queryParams: {
+    <span class="text-warning">maxPrice</span>: <span class="text-danger">"50"</span>
+    ...
+  }
+});
+var querySelect = new Backgrid.Extension.QuerySelect({
+  selectBox: {
+    options: [
+      {
+        text: "Less than $50",
+        value: <span class="text-danger">"50"</span>,
+        <span class="text-primary">selected: true</span>
+      }
+    ]
+  },
+  queryParam: <span class="text-warning">"maxPrice"</span>
+  ...
+});
+</pre>
+
+      <h4>Common Issues</h3>
+
+      <p>There are a few issues that could show up in the console:</p>
+
+      <ul>
+        <li><span class="text-danger">"backbone.paginator is required"</span> - Backbone.PageableCollection needs to exist (include the backbone.paginator JavaScript file).</li>
+        <li><span class="text-danger">"server" or "infinite" mode is required</span> - The extension is not meant to run in "client" mode. A client-side filter is available with another extension <a href="https://github.com/AmiliaApp/backgrid-select-filter">Backgrid Select Filter</a>.</li>
+        <li><span class="text-danger">A query parameter is required</span> - Tell the extension what query parameter to send to the server. The query parameter should match a query parameter on the Backbone.PageableCollection.</li>
+        <li><span class="text-danger">A maximum of 1 item should be marked as selected</span> - More than one of the objects in the options array was marked as selected.</li>
+        <li><span class="text-warning">The default option's value does not match collection's queryParam value</span> - Not a deal breaker, but the default/first option in the dropdown (none were marked as selected) should probably match the value that the collection is sending to the server when it is first fetched. That way the rendered select box will line up with the rendered table.</li>
+        <li><span class="text-warning">The selected option's value does not match the collection's queryParam value</span> - Again, not a deal breaker, but the selected option in the dropdown should probably match the value that the collection is sending to the server when it is first fetched.</li>
+      </ul>
+
+
+    </div><!-- /.container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="js/ie10-viewport-bug-workaround.js"></script>
+
+    <script src="js/underscore-min.js"></script>
+    <script src="js/backbone-min.js"></script>
+    <script src="js/backbone.paginator.min.js"></script>
+    <script src="js/backgrid.min.js"></script>
+    <script src="js/backgrid-paginator.min.js"></script>
+
+    <script src="../backgrid-query-select.js"></script>
+
+    <script>
+      // Works exactly like Backbone.Collection.
+      var Issues = Backbone.PageableCollection.extend({
+
+        url: "https://api.github.com/search/issues",
+
+        // Initial pagination states
+        state: {
+          pageSize: 10,
+          sortKey: "updated",
+          order: 1
+        },
+
+        // You can remap the query parameters from `state` keys from
+        // the default to those your server supports
+        queryParams: {
+          totalPages: null,
+          totalRecords: null,
+          sortKey: "sort",
+          q: "state:open"
+        },
+
+        // get the state from Github's search API result
+        parseState: function (resp, queryParams, state, options) {
+          return {totalRecords: resp.total_count};
+        },
+
+        // get the actual records
+        parseRecords: function (resp, options) {
+          return resp.items;
+        }
+
+      });
+
+      var issues = new Issues();
+
+      var IndexCell = Backgrid.Cell.extend({
+        render: function () {
+          this.$el.text(this.model.collection.indexOf(this.model) + 1 + ((this.model.collection.state.currentPage - 1) * this.model.collection.state.pageSize));
+          this.$el.css({
+            width: '50px'
+          });
+          return this;
+        }
+      });
+
+      var grid = new Backgrid.Grid({
+        columns: [
+          {
+            name: '',
+            label: '',
+            cell: IndexCell,
+            sortable: false,
+            editable: false
+          },
+          {
+            label: "Id",
+            name: "id",
+            cell: Backgrid.IntegerCell.extend({ orderSeparator: '' }),
+            sortable: false,
+            editable: false
+          },
+          {
+            label: "Title",
+            name: "title",
+            cell: "string",
+            sortable: false,
+            editable: false
+          },
+          {
+            label: 'Body',
+            name: 'body',
+            cell: 'string',
+            sortable: false,
+            editable: false,
+            formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+              fromRaw: function (rawValue, model) {
+                if (model.get('body')) {
+                  return model.get('body').trim().length >= 200 ? model.get('body').trim().substring(0, 200) + "…" : model.get('body').trim();
+                } else {
+                  return "";
+                }
+              }
+            })
+          },
+          {
+            label: 'State',
+            name: 'state',
+            cell: 'string',
+            sortable: false,
+            editable: false,
+            formatter: _.extend({}, Backgrid.CellFormatter.prototype, {
+              fromRaw: function (rawValue, model) {
+                return model.get('state').charAt(0).toUpperCase() + model.get('state').slice(1);
+              }
+            })
+          },
+          {
+            label: "Comments",
+            name: "comments",
+            cell: "integer",
+            sortable: true,
+            editable: false
+          }
+        ],
+        className: 'backgrid table table-striped table-bordered',
+        collection: issues
+      });
+
+      var paginator = new Backgrid.Extension.Paginator({
+        collection: issues,
+        className: "",
+        controls: {
+          rewind: {
+            label: '&laquo;',
+            title: 'First'
+          },
+          back: {
+            label: '&lsaquo;',
+            title: 'Previous'
+          },
+          forward: {
+            label: '&rsaquo;',
+            title: 'Next'
+          },
+          fastForward: {
+            label: '&raquo;',
+            title: 'Last'
+          }
+        }
+      });
+
+      var querySelect = new Backgrid.Extension.QuerySelect({
+        collection: issues,
+        className: "form-control", // Give it a Bootstrap class
+        selectBox: {
+          options: [
+            {
+              text: "All Issues",
+              label: "All",
+              value: ""
+            },
+            {
+              text: "Closed Issues",
+              value: "state:closed",
+              selected: true
+            },
+            {
+              text: "Open Issues",
+              value: "state:open",
+            },
+            {
+              text: "Bounty Issues",
+              disabled: true
+            }
+          ]
+        },
+        queryParam: "q"
+      });
+
+      issues.on('sync', function () {
+        $("#grid").append(grid.render().$el).fadeIn();
+        $("#paginator").append(paginator.render().$el).find('ul').addClass('pagination'); // Use Boostrap styles instead
+        $("#paginator").fadeIn();
+        $("#query-select").append(querySelect.render().$el).fadeIn();
+      });
+
+      issues.fetch({reset: true});
+    </script>
+  </body>
+</html>
